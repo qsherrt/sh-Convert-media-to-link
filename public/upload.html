@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>上传并获取链接</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;max-width:900px;margin:32px auto;padding:0 16px;color:#111}
+    input,button{font-size:15px}
+    .preview{margin-top:12px}
+    img,video{max-width:100%}
+    .out{margin-top:12px}
+  </style>
+</head>
+<body>
+  <h2>上传文件并获取链接</h2>
+  <input type="file" id="file" accept="image/*,video/*,audio/*,*/*">
+  <button id="up">上传</button>
+  <div class="out" id="out"></div>
+
+  <script>
+    document.getElementById('up').addEventListener('click', async () => {
+      const f = document.getElementById('file').files[0];
+      if(!f){ alert('先选个文件'); return; }
+      const fd = new FormData();
+      fd.append('file', f);
+      const out = document.getElementById('out');
+      out.textContent = '上传中...';
+      try{
+        const resp = await fetch('/api/upload', { method:'POST', body: fd });
+        const data = await resp.json();
+        if(!resp.ok){ out.textContent = '上传失败: ' + (data && data.error ? data.error : JSON.stringify(data)); return; }
+        out.innerHTML = `链接： <a href="${data.url}" target="_blank">${data.url}</a> <br>文件名：${data.name}， 大小：${(data.size/1024).toFixed(1)} KB`;
+      }catch(err){ out.textContent = '上传出错: ' + err; }
+    });
+  </script>
+</body>
+</html>
